@@ -1,0 +1,1 @@
+scp -i $1 ubuntu@$2:~/Cameraman/image_output.zip ~/Desktop/
