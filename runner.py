@@ -36,6 +36,7 @@ class Runner:
             sftp.put("./remote_scripts/train.sh", "/home/ubuntu/train.sh")
             sftp.put("./remote_scripts/run.sh", "/home/ubuntu/run.sh")
             sftp.put("./remote_scripts/save.sh", "/home/ubuntu/save.sh")
+            sftp.put("./remote_scripts/clear.sh", "/home/ubuntu/clear.sh")
             return True
         except Exception as e:
             print("Error transferring remote_scripts: " + str(e))
@@ -133,6 +134,7 @@ class Runner:
                         break
 
             self.copy_image_output()
+            self.clear_image_output()
         except Exception as e:
             print("Error running model: " + str(e))
         finally:
@@ -144,6 +146,21 @@ class Runner:
             f'source ./local_scripts/copy_image_output.sh {self.ssh_key_path} {self.instance_ip}',
             shell=True
         )
+
+    def clear_image_output(self):
+        try:
+            _, stdout, stderr = self.client.exec_command(f"source clear.sh")
+            exit_status = stdout.channel.recv_exit_status()
+            if exit_status == 0:
+                print("Image output is cleared.")
+            else:
+                print("Image output clearing failed.")
+                for line in stderr:
+                    print(line.strip())
+        except Exception as e:
+            print("Error clearing image output: " + str(e))
+        finally:
+            print("Image output cleared.")
 
     def save_model(self, name):
         if self.zip_model_on_remote_machine(name):
